@@ -1,0 +1,34 @@
+# Core Dependencies
+Pillow>=10.0.0  # Image processing
+pandas>=2.0.0    # Data handling and CSV export/import
+
+# Database
+mysql-connector-python>=8.0.0  # Optional: Only needed for MySQL support
+
+# Comic Book Handling
+comicapi>=3.2.0     # Comic metadata extraction
+py7zr>=0.20.0      # 7z, ZIP, RAR, TAR, GZIP, BZIP2, XZ, LZMA, CAB, ISO, ARJ, etc.
+pikepdf>=8.0.0     # PDF/CBZ file handling
+
+# File Type Detection
+python-magic>=0.4.27
+python-magic-bin>=0.4.14; platform_system == "Windows"  # Windows-specific binary
+
+# GUI
+ttkbootstrap>=1.10.1  # Modern theming and UI components
+
+# Development
+black>=23.0.0    # Code formatting
+mypy>=1.0.0      # Static type checking
+pytest>=7.0.0    # Testing framework
+
+# Documentation
+sphinx>=6.0.0    # Documentation generation
+sphinx-rtd-theme>=1.2.0  # ReadTheDocs theme
+
+# Linting
+flake8>=6.0.0    # Code style checking
+isort>=5.12.0    # Import sorting
+
+# For development/testing
+pytest

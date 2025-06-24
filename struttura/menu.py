@@ -1,0 +1,69 @@
+import tkinter as tk
+from tkinter import messagebox
+import sys
+from .about import About
+from .help import Help
+from .sponsor import Sponsor
+from .log_viewer import LogViewer
+from .version import show_version, get_version
+from .updates import check_for_updates
+from .lang import tr, set_language
+
+LANG_OPTIONS = {'English': 'en', 'Italiano': 'it'}
+
+def create_menu_bar(root, app):
+    menubar = tk.Menu(root)
+    
+    # File menu
+    file_menu = tk.Menu(menubar, tearoff=0)
+    
+    # Comics submenu
+    comics_menu = tk.Menu(file_menu, tearoff=0)
+    comics_menu.add_command(
+        label=tr('import_comics'), 
+        command=lambda: app.show_comics_tab('import')
+    )
+    comics_menu.add_command(
+        label=tr('browse_comics'), 
+        command=lambda: app.show_comics_tab('browse')
+    )
+    comics_menu.add_separator()
+    comics_menu.add_command(
+        label=tr('manage_database'), 
+        command=lambda: app.show_comics_tab('database')
+    )
+    
+    file_menu.add_cascade(label=tr('comics'), menu=comics_menu)
+    file_menu.add_separator()
+    file_menu.add_command(label=tr('exit'), command=root.quit)
+    menubar.add_cascade(label=tr('file'), menu=file_menu)
+    
+    # Log menu
+    log_menu = tk.Menu(menubar, tearoff=0)
+    log_menu.add_command(label=tr('view_log'), command=lambda: LogViewer.show_log(root))
+    menubar.add_cascade(label=tr('log'), menu=log_menu)
+    
+    # Help menu
+    help_menu = tk.Menu(menubar, tearoff=0)
+    help_menu.add_command(label=tr('help'), command=lambda: Help.show_help(root))
+    help_menu.add_separator()
+    help_menu.add_command(label=tr('check_for_updates'), command=lambda: check_for_updates(root, get_version()))
+    help_menu.add_separator()
+    help_menu.add_command(label=tr('about'), command=lambda: About.show_about(root))
+    help_menu.add_command(label=tr('sponsor'), command=lambda: Sponsor(root).show_sponsor())
+    menubar.add_cascade(label=tr('help'), menu=help_menu)
+    
+    # Language menu
+    def set_lang_and_restart(lang_code):
+        set_language(lang_code)
+        root.destroy()
+        import os
+        os.execl(sys.executable, sys.executable, *sys.argv)
+
+    lang_menu = tk.Menu(menubar, tearoff=0)
+    for label, code in LANG_OPTIONS.items():
+        lang_menu.add_command(label=label, command=lambda c=code: set_lang_and_restart(c))
+    menubar.add_cascade(label=tr('language'), menu=lang_menu)
+
+    root.config(menu=menubar)
+    return menubar

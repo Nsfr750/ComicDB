@@ -1,0 +1,165 @@
+import tkinter as tk
+from tkinter import ttk
+from struttura.menu import create_menu_bar
+from struttura.logger import log_info, log_error, log_warning
+from struttura.lang import tr
+import os
+
+class MainWindow(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title(tr('app_title'))
+        self.geometry('1024x768')
+        
+        # Configure grid weights
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        
+        # Menu bar
+        create_menu_bar(self, self)
+        
+        # Create notebook for tabs
+        self.notebook = ttk.Notebook(self)
+        self.notebook.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+        
+        # Create comics panel
+        self._create_comics_panel()
+        
+        # Log frame
+        log_frame = ttk.LabelFrame(self, text=tr('log'))
+        log_frame.grid(row=2, column=0, sticky='nsew', padx=5, pady=5)
+        
+        # Configure log frame grid
+        log_frame.grid_rowconfigure(0, weight=1)
+        log_frame.grid_columnconfigure(0, weight=1)
+        
+        # Log box with scrollbar
+        self.log_box = tk.Text(log_frame, height=8, state='disabled', wrap='word')
+        scrollbar = ttk.Scrollbar(log_frame, orient='vertical', command=self.log_box.yview)
+        self.log_box.configure(yscrollcommand=scrollbar.set)
+        
+        # Grid layout for log box and scrollbar
+        self.log_box.grid(row=0, column=0, sticky='nsew', padx=2, pady=2)
+        scrollbar.grid(row=0, column=1, sticky='ns', padx=0, pady=2)
+        
+        # Status bar
+        self.status_var = tk.StringVar()
+        self.status_bar = ttk.Label(
+            self, 
+            textvariable=self.status_var,
+            relief=tk.SUNKEN, 
+            anchor=tk.W
+        )
+        self.status_bar.grid(row=3, column=0, sticky='ew', padx=5, pady=2)
+        
+        # Initial status update
+        self._update_status()
+    
+    def _create_comics_panel(self):
+        """Create and add the comics panel to the notebook."""
+        try:
+            from gui.comics_panel import ComicsPanel
+            
+            # Database configuration - using SQLite
+            db_config = {
+                'database': 'comicdb.sqlite',  # SQLite database file
+                'db_type': 'sqlite'  # Indicate we're using SQLite
+            }
+            
+            # Create and add the comics panel
+            self.comics_panel = ComicsPanel(self.notebook, db_config)
+            self.notebook.add(self.comics_panel, text='Comics')  # Use hardcoded text instead of tr()
+            
+        except ImportError as e:
+            log_error(f"Error importing comics panel: {e}")
+            error_label = ttk.Label(
+                self.notebook, 
+                text=f"Error loading comics panel: {e}",
+                foreground='red',
+                wraplength=400,
+                padding=10
+            )
+            self.notebook.add(error_label, text='Error')  # Use hardcoded text instead of tr()
+        except Exception as e:
+            log_error(f"Unexpected error creating comics panel: {e}")
+            import traceback
+            error_details = traceback.format_exc()
+            log_error(f"Error details: {error_details}")
+            
+            error_label = ttk.Label(
+                self.notebook, 
+                text=f"Error: {str(e)}\n\nPlease check the log file for more details.",
+                foreground='red',
+                wraplength=400,
+                padding=10
+            )
+            self.notebook.add(error_label, text='Error')
+    
+    def show_comics_tab(self, tab_name: str) -> None:
+        """Switch to a specific tab in the comics panel.
+        
+        Args:
+            tab_name: Name of the tab to show ('import', 'browse', or 'database')
+        """
+        try:
+            # Make sure the comics panel is visible
+            if self.notebook.index('end') == 0:
+                self._create_comics_panel()
+            
+            # Select the comics tab (first tab)
+            self.notebook.select(0)
+            
+            # If the comics panel has a method to switch tabs, call it
+            if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'show_tab'):
+                self.comics_panel.show_tab(tab_name)
+                
+        except Exception as e:
+            log_error(f"Error showing comics tab '{tab_name}': {e}")
+            messagebox.showerror(
+                "Error",
+                f"Could not switch to {tab_name} tab: {str(e)}"
+            )
+    
+    def _update_status(self):
+        """Update the status bar with current information."""
+        try:
+            # Get database stats if available
+            if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'db'):
+                count = self.comics_panel.db.get_comic_count()
+                self.status_var.set(tr('comics_in_database', count=count))
+            else:
+                self.status_var.set(tr('not_connected_to_database'))
+        except Exception as e:
+            log_error(f"Error updating status: {e}")
+            self.status_var.set(tr('error_loading_status'))
+  
+    def append_log(self, text):
+        """Append text to the log box."""
+        try:
+            self.log_box.config(state='normal')
+            self.log_box.insert(tk.END, text + '\n')
+            self.log_box.see(tk.END)
+            self.log_box.config(state='disabled')
+            log_info(text.strip())
+        except Exception as e:
+            log_error(f"Error appending to log: {e}")
+
+    def _show_success(self, msg):
+        """Show a success message in the log."""
+        log_info(f"SUCCESS: {msg}")
+        self.append_log(f"SUCCESS: {msg}")
+
+    def _show_error(self, msg):
+        """Show an error message in the log."""
+        log_error(f"ERROR: {msg}")
+        self.append_log(f"ERROR: {msg}")
+    
+    def cleanup(self):
+        """Clean up resources before closing the application."""
+        # Clean up the comics panel if it exists
+        if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'cleanup'):
+            self.comics_panel.cleanup()
+        
+        # Close the application
+        self.destroy()

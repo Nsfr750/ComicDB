@@ -1,0 +1,249 @@
+# Simple multilanguage support for English and Italian
+
+LANGUAGES = {
+    'en': {
+        'app_title': 'ComicDB',
+        'success': 'SUCCESS: {msg}',
+        'error': 'ERROR: {msg}',
+        'file': 'File',
+        'exit': 'Exit',
+        'log': 'Log',
+        'view_log': 'View Log',
+        'help': 'Help',
+        'about': 'About',
+        'sponsor': 'Sponsor',
+        'version': 'Version',
+        'check_for_updates': 'Check for Updates',
+        'language': 'Language',
+        'log_viewer_title': 'Application Log',
+        'close': 'Close',
+        'log_file_not_found': 'Log file not found.',
+        'no_log_entries': 'No log entries for {level}',
+        'usage_tab': 'Usage',
+        'features_tab': 'Features',
+        'sponsor_on_github': 'Sponsor on GitHub',
+        'join_discord': 'Join Discord',
+        'buy_me_a_coffee': 'Buy Me a Coffee',
+        'join_the_patreon': 'Join the Patreon',
+        'about_title': 'About',
+        'about_project': 'Project',
+        'about_description': 'A modern Python GUI app for demonstration and productivity.',
+        'copyright': '\u00a9 2025 Nsfr750',
+        'show_version': 'Show Version',
+        'version_info': 'Version Information',
+        'help_usage': "To start the application, run main.py from the project root.\nNavigate the menu bar for Help, About, Log Viewer, and more.\nUse the Log Viewer to see and filter application logs in real time.\nCustom log entries can be added in your code using log_info, log_warning, log_error.\nCommon troubleshooting: If you see import errors, ensure you are running from the root directory.\n",
+        'help_features': "- Centralized logging system: info, warning, error, and uncaught exceptions are logged to traceback.log.\n- Log Viewer dialog with real-time filtering: view ALL, INFO, WARNING, or ERROR entries.\n- Use log_info, log_warning, log_error for custom log entries in your code.\n- Robust error handling and extensible design.\n",
+        'error_loading_comics': 'Error loading comics from database.',
+        
+        # Comic Management
+        'import_comics': 'Import Comics',
+        'browse_comics': 'Browse Comics',
+        'manage_database': 'Manage Database',
+        'scan_directory': 'Scan Directory',
+        'browse': 'Browse',
+        'options': 'Options',
+        'scan_recursively': 'Scan subdirectories',
+        'start_scan': 'Start Scan',
+        'stop_scan': 'Stop Scan',
+        'search': 'Search',
+        'filters': 'Filters',
+        'publisher': 'Publisher',
+        'series': 'Series',
+        'year': 'Year',
+        'clear_filters': 'Clear Filters',
+        'title': 'Title',
+        'issue': 'Issue',
+        'file_path': 'File Path',
+        'open_file_location': 'Open File Location',
+        'delete_from_database': 'Delete from Database',
+        'database_info': 'Database Info',
+        'comics': 'Comics',
+        'import_export': 'Import / Export',
+        'create_tables': 'Create Tables',
+        'clear_database': 'Clear Database',
+        'backup_database': 'Backup Database',
+        'import_csv': 'Import CSV',
+        'export_csv': 'Export CSV',
+        'confirm': 'Confirm',
+        'confirm_create_tables': 'This will create the database tables. Continue?',
+        'confirm_clear_database': 'WARNING: This will delete all data from the database. Continue?',
+        'confirm_stop_scan': 'Are you sure you want to stop the current scan?',
+        'confirm_delete': 'Confirm Deletion',
+        'confirm_delete_comic': 'Are you sure you want to delete \'{title}\' from the database?',
+        'save_backup_as': 'Save Backup As',
+        'select_csv_file': 'Select CSV File',
+        'save_export_as': 'Save Export As',
+        'success': 'Operation Completed',
+        'error': 'Error',
+        'info': 'Information',
+        'scan_complete': 'Scan Complete',
+        'scan_complete_msg': 'Processed {processed} files, imported {imported} new comics.',
+        'no_comics_found': 'No comic files found in the selected directory.',
+        'invalid_directory': 'Please select a valid directory.',
+        'database_connection_error': 'Unable to connect to database: {error}',
+        'scan_error': 'An error occurred during scanning: {error}',
+        'comics_found': 'Found {count} comics',
+        'error_opening_file': 'Could not open file: {file}\nError: {error}',
+        'error_opening_location': 'Could not open file location: {error}',
+        'comic_deleted': 'Comic deleted: {title}',
+        'error_deleting_comic': 'Error deleting comic: {error}',
+        'tables_created': 'Database tables created successfully.',
+        'error_creating_tables': 'Error creating database tables.',
+        'database_cleared': 'Database cleared successfully.',
+        'error_clearing_database': 'Error clearing database.',
+        'backup_created': 'Backup created successfully at:\n{path}',
+        'error_creating_backup': 'Error creating database backup.',
+        'import_successful': 'Import completed successfully.',
+        'import_failed': 'Import failed. Check logs for details.',
+        'import_error': 'Error during import: {error}',
+        'export_successful': 'Export completed successfully to:\n{path}',
+        'export_failed': 'Export failed. Check logs for details.',
+        'export_error': 'Error during export: {error}',
+        'not_connected_to_database': 'Not connected to database',
+        'comics_in_database': '{count} comics in database',
+        'error_loading_stats': 'Error loading statistics',
+        'error_loading_status': 'Error loading status',
+    },
+    'it': {
+        'app_title': 'ComicDB',
+        'success': 'SUCCESSO: {msg}',
+        'error': 'ERRORE: {msg}',
+        'file': 'File',
+        'exit': 'Esci',
+        'log': 'Log',
+        'view_log': 'Visualizza Log',
+        'help': 'Aiuto',
+        'about': 'Informazioni',
+        'sponsor': 'Sostieni',
+        'version': 'Versione',
+        'check_for_updates': 'Controlla Aggiornamenti',
+        'language': 'Lingua',
+        'log_viewer_title': 'Registro Applicazione',
+        'close': 'Chiudi',
+        'log_file_not_found': 'File di log non trovato.',
+        'no_log_entries': 'Nessuna voce di log per {level}',
+        'usage_tab': 'Utilizzo',
+        'features_tab': 'Funzionalità',
+        'sponsor_on_github': 'Sponsorizza su GitHub',
+        'join_discord': 'Unisciti a Discord',
+        'buy_me_a_coffee': 'Offrimi un caffè',
+        'join_the_patreon': 'Unisciti a Patreon',
+        'about_title': 'Informazioni',
+        'about_project': 'Progetto',
+        'about_description': "Un'applicazione GUI Python moderna per dimostrazione e produttività.",
+        'copyright': '\u00a9 2025 Nsfr750',
+        'show_version': 'Mostra Versione',
+        'version_info': 'Informazioni Versione',
+        'help_usage': "Per avviare l'applicazione, esegui main.py dalla cartella principale del progetto.\nNaviga nella barra dei menu per Aiuto, Informazioni, Visualizza Log e altro.\nUsa il Visualizzatore Log per vedere e filtrare i log dell'applicazione in tempo reale.\nPuoi aggiungere voci personalizzate nel log usando log_info, log_warning, log_error nel tuo codice.\nRisoluzione problemi: se visualizzi errori di importazione, assicurati di eseguire dalla cartella principale.\n",
+        'help_features': "- Sistema di logging centralizzato: info, warning, error ed eccezioni non gestite vengono registrate in traceback.log.\n- Finestra Visualizza Log con filtro in tempo reale: visualizza TUTTI, INFO, WARNING o ERROR.\n- Gestione fumetti: Importa, sfoglia e gestisci la tua collezione di fumetti.\n- Supporto database: Archivia i metadati dei tuoi fumetti in un database MySQL.\n- Formati supportati: Sono supportati i formati CBR, CBZ e PDF.\n- Usa log_info, log_warning, log_error per aggiungere voci personalizzate nel log dal tuo codice.\n- Gestione robusta degli errori e design estendibile.\n",
+        'error_loading_comics': 'Errore durante il caricamento dei fumetti dal database.',
+        
+        # Gestione fumetti
+        'import_comics': 'Importa Fumetti',
+        'browse_comics': 'Sfoglia Fumetti',
+        'manage_database': 'Gestisci Database',
+        'scan_directory': 'Cartella di Scansione',
+        'browse': 'Sfoglia',
+        'options': 'Opzioni',
+        'scan_recursively': 'Scansiona sottocartelle',
+        'start_scan': 'Avvia Scansione',
+        'stop_scan': 'Ferma Scansione',
+        'search': 'Cerca',
+        'filters': 'Filtri',
+        'publisher': 'Editore',
+        'series': 'Serie',
+        'year': 'Anno',
+        'clear_filters': 'Azzera Filtri',
+        'title': 'Titolo',
+        'issue': 'Numero',
+        'file_path': 'Percorso File',
+        'open_file_location': 'Apri Posizione File',
+        'delete_from_database': 'Elimina dal Database',
+        'database_info': 'Informazioni Database',
+        'comics': 'Fumetti',
+        'import_export': 'Importa / Esporta',
+        'create_tables': 'Crea Tabelle',
+        'clear_database': 'Svuota Database',
+        'backup_database': 'Backup Database',
+        'import_csv': 'Importa CSV',
+        'export_csv': 'Esporta CSV',
+        'confirm': 'Conferma',
+        'confirm_create_tables': 'Verranno create le tabelle del database. Continuare?',
+        'confirm_clear_database': 'ATTENZIONE: Verranno eliminati tutti i dati dal database. Continuare?',
+        'confirm_stop_scan': 'Sei sicuro di voler interrompere la scansione in corso?',
+        'confirm_delete': 'Conferma Eliminazione',
+        'confirm_delete_comic': 'Sei sicuro di voler eliminare \'{title}\' dal database?',
+        'save_backup_as': 'Salva Backup Come',
+        'select_csv_file': 'Seleziona File CSV',
+        'save_export_as': 'Salva Esportazione Come',
+        'success': 'Operazione Completata',
+        'error': 'Errore',
+        'info': 'Informazione',
+        'scan_complete': 'Scansione Completata',
+        'scan_complete_msg': 'Elaborati {processed} file, importati {imported} nuovi fumetti.',
+        'no_comics_found': 'Nessun file di fumetti trovato nella cartella selezionata.',
+        'invalid_directory': 'Selezionare una cartella valida.',
+        'database_connection_error': 'Impossibile connettersi al database: {error}',
+        'scan_error': 'Si è verificato un errore durante la scansione: {error}',
+        'error_loading_comics': 'Errore nel caricamento dei fumetti',
+        'comics_found': 'Trovati {count} fumetti',
+        'error_opening_file': 'Impossibile aprire il file: {file}\nErrore: {error}',
+        'error_opening_location': 'Impossibile aprire la posizione del file: {error}',
+        'comic_deleted': 'Fumetto eliminato: {title}',
+        'error_deleting_comic': 'Errore durante l\'eliminazione del fumetto: {error}',
+        'tables_created': 'Tabelle del database create con successo.',
+        'error_creating_tables': 'Errore durante la creazione delle tabelle del database.',
+        'database_cleared': 'Database svuotato con successo.',
+        'error_clearing_database': 'Errore durante lo svuotamento del database.',
+        'backup_created': 'Backup creato con successo in:\n{path}',
+        'error_creating_backup': 'Errore durante la creazione del backup del database.',
+        'import_successful': 'Importazione completata con successo.',
+        'import_failed': 'Importazione fallita. Controllare i log per i dettagli.',
+        'import_error': 'Errore durante l\'importazione: {error}',
+        'export_successful': 'Esportazione completata con successo in:\n{path}',
+        'export_failed': 'Esportazione fallita. Controllare i log per i dettagli.',
+        'export_error': 'Errore durante l\'esportazione: {error}',
+        'not_connected_to_database': 'Non connesso al database',
+        'comics_in_database': '{count} fumetti nel database',
+        'error_loading_stats': 'Errore nel caricamento delle statistiche',
+        'error_loading_status': 'Errore nel caricamento dello stato',
+    }
+}
+
+import os
+import json
+
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
+
+def _load_lang():
+    try:
+        with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get('lang', 'en')
+    except Exception:
+        return 'en'
+
+def _save_lang(lang):
+    try:
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump({'lang': lang}, f, indent=4)
+    except Exception as e:
+        print(f"Error saving language: {e}")
+
+_current_lang = _load_lang()
+
+def set_language(lang):
+    global _current_lang
+    if lang in LANGUAGES:
+        _current_lang = lang
+    else:
+        _current_lang = 'en'
+    _save_lang(_current_lang)
+
+def get_language():
+    return _current_lang
+
+def tr(key, **kwargs):
+    text = LANGUAGES.get(_current_lang, LANGUAGES['en']).get(key, key)
+    return text.format(**kwargs)
