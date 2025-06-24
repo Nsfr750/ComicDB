@@ -121,13 +121,31 @@ def main():
         
         # Check for updates on startup (non-blocking)
         try:
-            from struttura.updates import check_for_updates
+            from struttura.updates import UpdateChecker
             from struttura.version import get_version
             
-            # Use after() to schedule the update check after the UI is shown
-            app.after(3000, lambda: check_for_updates(app, get_version()))
+            def do_update_check():
+                try:
+                    # Create and configure the update checker
+                    checker = UpdateChecker(
+                        current_version=get_version(),
+                        update_url="https://api.github.com/repos/Nsfr750/ComicDB/releases/latest"
+                    )
+                    update_available, update_info = checker.check_for_updates(app, force_check=False)
+                    if update_available and update_info:
+                        checker.show_update_dialog(app, update_info)
+                except Exception as e:
+                    print(f"Error during update check: {e}")
+                    import traceback
+                    traceback.print_exc()
+            
+            # Schedule the update check after the UI is shown
+            app.after(3000, do_update_check)
+            
         except Exception as e:
             print(f"Error setting up update check: {e}")
+            import traceback
+            traceback.print_exc()
         
         print("Starting main loop...")
         app.mainloop()

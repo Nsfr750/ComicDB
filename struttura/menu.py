@@ -6,7 +6,7 @@ from .help import Help
 from .sponsor import Sponsor
 from .log_viewer import LogViewer
 from .version import show_version, get_version
-from .updates import check_for_updates
+from .updates import UpdateChecker
 from .lang import tr, set_language
 
 LANG_OPTIONS = {'English': 'en', 'Italiano': 'it'}
@@ -47,7 +47,21 @@ def create_menu_bar(root, app):
     help_menu = tk.Menu(menubar, tearoff=0)
     help_menu.add_command(label=tr('help'), command=lambda: Help.show_help(root))
     help_menu.add_separator()
-    help_menu.add_command(label=tr('check_for_updates'), command=lambda: check_for_updates(root, get_version()))
+    def do_update_check():
+        try:
+            checker = UpdateChecker(
+                current_version=get_version(),
+                update_url="https://api.github.com/repos/Nsfr750/ComicDB/releases/latest"
+            )
+            update_available, update_info = checker.check_for_updates(root, force_check=True)
+            if update_available and update_info:
+                checker.show_update_dialog(root, update_info)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Update Error", f"Failed to check for updates: {str(e)}")
+    
+    help_menu.add_command(label=tr('check_for_updates'), command=do_update_check)
     help_menu.add_separator()
     help_menu.add_command(label=tr('about'), command=lambda: About.show_about(root))
     help_menu.add_command(label=tr('sponsor'), command=lambda: Sponsor(root).show_sponsor())

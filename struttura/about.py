@@ -14,7 +14,7 @@ class About:
         about_dialog.grab_set()
 
         # Add app icon or logo here if you have one
-        title = ttk.Label(about_dialog, text='Project', font=('Helvetica', 16, 'bold'))
+        title = ttk.Label(about_dialog, text='ComicDB', font=('Helvetica', 16, 'bold'))
         title.pack(pady=20)
 
         # Get version dynamically from version.py

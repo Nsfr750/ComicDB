@@ -426,7 +426,7 @@ class ComicsPanel(ttk.Frame):
             list_frame,
             columns=columns,
             show='headings',
-            selectmode='browse'
+            selectmode='extended'  # Enable multiple selection
         )
         
         # Configure columns
@@ -511,14 +511,14 @@ class ComicsPanel(ttk.Frame):
                 series=series if series else None
             )
             
-            # Add to treeview
+            # Add to treeview with safe field access
             for comic in comics:
                 self.tree.insert('', 'end', values=(
-                    comic['title'],
-                    comic['series'],
-                    comic['issue'],
-                    comic['publisher'],
-                    comic['year']
+                    comic.get('title', ''),
+                    comic.get('series', ''),
+                    comic.get('issue', ''),
+                    comic.get('publisher', ''),
+                    comic.get('year', '')
                 ))
             
             # Update status
@@ -526,7 +526,7 @@ class ComicsPanel(ttk.Frame):
             
         except Exception as e:
             error_msg = f"{tr('error_loading_comics')}\n\n{str(e)}"
-            log_error(f"Error loading comics: {e}")
+            log_error(f"Error loading comics: {e}", exc_info=True)
             messagebox.showerror(tr('error'), error_msg)
     
     def _clear_filters(self) -> None:
@@ -565,31 +565,50 @@ class ComicsPanel(ttk.Frame):
             )
     
     def _delete_selected_comic(self) -> None:
-        """Delete the selected comic from the database."""
+        """Delete the selected comics from the database."""
         selected = self.tree.selection()
         if not selected:
             return
-        
-        try:
-            # Get comic details
-            item = selected[0]
-            values = self.tree.item(item)['values']
-            title = values[0]  # Assuming first column is title
             
-            if messagebox.askyesno(
-                tr('confirm_delete'),
-                tr('confirm_delete_comic', title=title)
-            ):
-                # Delete from database
-                if self.db and self.db.delete_comic(values[0]):  # Assuming first column is ID
-                    # Remove from treeview
+        try:
+            # Get comic details for confirmation
+            if len(selected) == 1:
+                values = self.tree.item(selected[0])['values']
+                title = values[0]
+                message = tr('confirm_delete_comic', title=title)
+            else:
+                message = f"Sei sicuro di voler eliminare i {len(selected)} fumetti selezionati?"
+            
+            if not messagebox.askyesno(tr('confirm_delete'), message):
+                return
+                
+            # Delete each selected comic
+            success_count = 0
+            for item in selected:
+                try:
+                    values = self.tree.item(item)['values']
+                    if self.db and self.db.delete_comic(values[0]):
+                        success_count += 1
+                except Exception as e:
+                    log_error(f"Error deleting comic: {e}")
+            
+            # Update UI
+            if success_count > 0:
+                for item in selected:
                     self.tree.delete(item)
-                    # Update status
-                    self._update_stats()
-                    self._update_status()
+                self._update_stats()
+                self._update_status()
+                
+                if success_count == 1:
                     messagebox.showinfo(tr('success'), tr('comic_deleted', title=title))
+                else:
+                    messagebox.showinfo(
+                        tr('success'),
+                        f"{success_count} fumetti eliminati con successo."
+                    )
+            
         except Exception as e:
-            log_error(f"Error deleting comic: {e}")
+            log_error(f"Error deleting comics: {e}")
             messagebox.showerror(
                 tr('error'),
                 tr('error_deleting_comic', error=str(e))
