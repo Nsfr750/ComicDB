@@ -20,7 +20,6 @@
 - [x] Refactor archive handling code (v0.0.2)
 - [x] Improve logging and error reporting (v0.0.2)
 - [ ] Optimize performance for large collections
-- [ ] Add type hints throughout the codebase
 - [x] Fix relative import issues in menu module (v0.0.3)
 
 ## 🌐 Localization
@@ -31,15 +30,7 @@
 - [ ] Add German language support
 - [ ] Add Portuguese language support
 - [ ] Add Russian language support
-- [ ] Add Aeabic language support
-
-
-## 📊 Testing & Quality
-
-- [ ] Set up CI/CD pipeline
-- [ ] Add integration tests for new archive formats
-- [ ] Implement code coverage reporting
-- [ ] Add performance benchmarks for archive operations
+- [ ] Add Arabic language support
 
 ## 📝 Documentation
 

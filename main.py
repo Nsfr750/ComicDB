@@ -9,6 +9,7 @@ if project_root not in sys.path:
 
 import tkinter as tk
 from tkinter import ttk, messagebox
+import os
 import configparser
 import logging
 import locale
@@ -88,6 +89,16 @@ def show_main_application(root, config):
     """Show the main application window."""
     # Configure the root window
     root.title(f"ComicDB {get_version()}")
+    
+    # Set application icon
+    try:
+        icon_path = os.path.join(os.path.dirname(__file__), 'images', 'icon.ico')
+        if os.path.exists(icon_path):
+            root.iconbitmap(icon_path)
+        else:
+            log_warning(f"Icon file not found at: {icon_path}")
+    except Exception as e:
+        log_error(f"Error setting application icon: {e}")
     
     # Create the main application
     app = MainWindow(root, config)
