@@ -6,10 +6,17 @@ from struttura.lang import tr
 import os
 
 class MainWindow(tk.Tk):
-    def __init__(self):
+    def __init__(self, db_config=None):
         super().__init__()
         self.title(tr('app_title'))
         self.geometry('1024x768')
+        self.db_config = db_config or {
+            'database': 'comicdb.sqlite',
+            'db_type': 'sqlite'
+        }
+        
+        # Set up window close handler
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
         
         # Configure grid weights
         self.grid_rowconfigure(0, weight=0)
@@ -155,11 +162,28 @@ class MainWindow(tk.Tk):
         log_error(f"ERROR: {msg}")
         self.append_log(f"ERROR: {msg}")
     
+    def on_close(self):
+        """Handle window close event."""
+        self.cleanup()
+    
     def cleanup(self):
         """Clean up resources before closing the application."""
-        # Clean up the comics panel if it exists
-        if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'cleanup'):
-            self.comics_panel.cleanup()
-        
+        try:
+            # Clean up the comics panel if it exists
+            if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'cleanup'):
+                self.comics_panel.cleanup()
+                
+            # Commit any pending transactions
+            if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'db') and self.comics_panel.db:
+                if hasattr(self.comics_panel.db.conn, 'commit'):
+                    self.comics_panel.db.conn.commit()
+                
+                # Close the database connection
+                if hasattr(self.comics_panel.db, 'close'):
+                    self.comics_panel.db.close()
+                    
+        except Exception as e:
+            log_error(f"Error during cleanup: {e}")
+            
         # Close the application
         self.destroy()

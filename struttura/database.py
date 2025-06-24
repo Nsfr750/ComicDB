@@ -136,10 +136,18 @@ class ComicDatabase:
         """Close all SQLite connections (for cleanup)."""
         if hasattr(_thread_local, 'connection') and _thread_local.connection is not None:
             try:
+                # Commit any pending changes
+                _thread_local.connection.commit()
                 _thread_local.connection.close()
                 logger.info("SQLite connection closed")
             except Exception as e:
                 logger.error(f"Error closing SQLite connection: {e}")
+                # If there was an error, try to close without committing
+                try:
+                    if _thread_local.connection:
+                        _thread_local.connection.close()
+                except:
+                    pass
             finally:
                 _thread_local.connection = None
             
@@ -1044,3 +1052,43 @@ class ComicDatabase:
         except Exception as e:
             logger.error(f"Error getting publisher count: {e}")
             return 0
+            
+    def delete_comic(self, comic_id: int) -> bool:
+        """Delete a comic and its related data from the database.
+        
+        Args:
+            comic_id: ID of the comic to delete
+            
+        Returns:
+            bool: True if deletion was successful, False otherwise
+        """
+        if not self.is_connected() and not self.connect():
+            logger.error("Cannot delete comic: No database connection")
+            return False
+            
+        cursor = self.connection.cursor()
+        try:
+            # First delete from comic_authors (due to foreign key constraints)
+            if self.db_type == 'sqlite':
+                cursor.execute("DELETE FROM comic_authors WHERE comic_id = ?", (comic_id,))
+                cursor.execute("DELETE FROM comics WHERE id = ?", (comic_id,))
+            else:  # MySQL
+                cursor.execute("DELETE FROM comic_authors WHERE comic_id = %s", (comic_id,))
+                cursor.execute("DELETE FROM comics WHERE id = %s", (comic_id,))
+                
+            self.connection.commit()
+            deleted = cursor.rowcount > 0
+            if deleted:
+                logger.info(f"Successfully deleted comic with ID {comic_id}")
+            else:
+                logger.warning(f"No comic found with ID {comic_id} to delete")
+            return deleted
+            
+        except Exception as e:
+            logger.error(f"Error deleting comic {comic_id}: {e}")
+            if self.connection:
+                self.connection.rollback()
+            return False
+        finally:
+            if cursor:
+                cursor.close()

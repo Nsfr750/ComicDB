@@ -108,16 +108,25 @@ def main():
         
         # Initialize database
         print("Initializing database...")
-        if not init_database():
-            print("Failed to initialize database. Exiting...")
-            input("Press Enter to exit...")
+        db_path = os.path.join(project_root, 'comicdb.sqlite')
+        db = ComicDatabase(database=db_path, db_type='sqlite')
+        
+        if not db.is_connected():
+            print("Error: Failed to connect to the database. Exiting...")
+            input("Premi Invio per uscire...")
+            return
+            
+        # Create tables if they don't exist
+        if not db.create_tables(force_recreate=False):
+            print("Error: Failed to create database tables. Exiting...")
+            input("Premi Invio per uscire...")
             return
         
         print("Importing MainWindow...")
         from gui.main_window import MainWindow
         
         print("Creating main window...")
-        app = MainWindow()
+        app = MainWindow(db_config={'database': db_path, 'db_type': 'sqlite'})
         
         # Check for updates on startup (non-blocking)
         try:
@@ -156,13 +165,40 @@ def main():
         traceback.print_exc()
         input("Press Enter to exit...")
         
+    except Exception as e:
+        print(f"Errore in main: {str(e)}")
+        print("\nTraceback:")
+        traceback.print_exc()
+        input("Premi Invio per uscire...")
+        
     finally:
         # Clean up database connections
-        if db:
-            if hasattr(db, 'close_all_connections'):
-                db.close_all_connections()
-            else:
-                db.close()
+        if 'db' in locals() and db is not None:
+            print("Cleaning up database connections...")
+            try:
+                # Commit any pending transactions
+                if hasattr(db, 'connection') and db.connection:
+                    try:
+                        db.connection.commit()
+                        print("Committed pending transactions")
+                    except Exception as commit_error:
+                        print(f"Error committing transactions: {commit_error}")
+                
+                # Close all connections
+                if hasattr(db, 'close_all_connections'):
+                    print("Closing all database connections...")
+                    db.close_all_connections()
+                elif hasattr(db, 'close'):
+                    print("Closing database connection...")
+                    db.close()
+                print("Database connections closed successfully")
+                
+            except Exception as e:
+                print(f"Error during database cleanup: {e}")
+                import traceback
+                traceback.print_exc()
+            finally:
+                db = None
 
 if __name__ == "__main__":
     print("Starting ComicDB...")

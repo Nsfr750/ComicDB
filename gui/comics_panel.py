@@ -420,13 +420,14 @@ class ComicsPanel(ttk.Frame):
         list_frame.grid_rowconfigure(0, weight=1)
         list_frame.grid_columnconfigure(0, weight=1)
         
-        # Treeview for comics
-        columns = ('title', 'series', 'issue', 'publisher', 'year')
+        # Treeview for comics - first column is hidden and contains the comic ID
+        columns = ('id', 'title', 'series', 'issue', 'publisher', 'year')
         self.tree = ttk.Treeview(
             list_frame,
             columns=columns,
             show='headings',
-            selectmode='extended'  # Enable multiple selection
+            selectmode='extended',  # Enable multiple selection
+            displaycolumns=('title', 'series', 'issue', 'publisher', 'year')  # Hide the ID column
         )
         
         # Configure columns
@@ -442,6 +443,7 @@ class ComicsPanel(ttk.Frame):
         self.tree.column('issue', width=50, anchor='center')
         self.tree.column('publisher', width=150)
         self.tree.column('year', width=60, anchor='center')
+        self.tree.column('id', width=0, stretch=False)  # Hide the ID column
         
         # Add scrollbars
         vsb = ttk.Scrollbar(list_frame, orient='vertical', command=self.tree.yview)
@@ -512,8 +514,10 @@ class ComicsPanel(ttk.Frame):
             )
             
             # Add to treeview with safe field access
+            # First value is the comic ID, which is hidden in the UI
             for comic in comics:
                 self.tree.insert('', 'end', values=(
+                    comic.get('id'),  # Hidden ID column
                     comic.get('title', ''),
                     comic.get('series', ''),
                     comic.get('issue', ''),
@@ -538,10 +542,20 @@ class ComicsPanel(ttk.Frame):
     
     def _show_context_menu(self, event) -> None:
         """Show the context menu for the selected comic."""
+        # Identify the row that was right-clicked
         item = self.tree.identify_row(event.y)
         if item:
-            self.tree.selection_set(item)
+            # Check if the right-clicked item is already selected
+            selected = self.tree.selection()
+            if item not in selected:
+                # If not in current selection, select only this item
+                self.tree.selection_set(item)
+            # Show the context menu at the click position
             self.context_menu.post(event.x_root, event.y_root)
+        else:
+            # If clicking outside any item, clear the selection
+            self.tree.selection_remove(self.tree.selection())
+            return "break"  # Prevent default behavior
     
     def _open_file_location(self) -> None:
         """Open the file location of the selected comic."""
@@ -586,9 +600,12 @@ class ComicsPanel(ttk.Frame):
             success_count = 0
             for item in selected:
                 try:
-                    values = self.tree.item(item)['values']
-                    if self.db and self.db.delete_comic(values[0]):
+                    # Get the comic ID from the hidden first column
+                    comic_id = self.tree.item(item)['values'][0]
+                    if self.db and self.db.delete_comic(comic_id):
                         success_count += 1
+                    else:
+                        log_error(f"Failed to delete comic with ID: {comic_id}")
                 except Exception as e:
                     log_error(f"Error deleting comic: {e}")
             
@@ -859,8 +876,25 @@ class ComicsPanel(ttk.Frame):
     
     def cleanup(self) -> None:
         """Clean up resources."""
-        if self.db:
-            self.db.close()
+        try:
+            # Signal any running scans to stop
+            self.stop_scan = True
             
-        # Signal any running scans to stop
-        self.stop_scan = True
+            # Close the database connection if it exists
+            if self.db:
+                try:
+                    # Commit any pending changes
+                    if hasattr(self.db, 'connection') and self.db.connection:
+                        self.db.connection.commit()
+                    
+                    # Close all connections
+                    if hasattr(self.db, 'close_all_connections'):
+                        self.db.close_all_connections()
+                    else:
+                        self.db.close()
+                except Exception as e:
+                    log_error(f"Error during database cleanup: {e}")
+                finally:
+                    self.db = None
+        except Exception as e:
+            log_error(f"Error in cleanup: {e}")
