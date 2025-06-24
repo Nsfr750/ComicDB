@@ -13,9 +13,7 @@
 
 - [ ] Add batch processing for multiple files
 - [ ] Implement series/volume management
-- [ ] Add dark/light theme support
 - [x] Support for more archive formats (CBT, CB7) (v0.0.2)
-- [ ] Add reading progress tracking
 
 ## 🛠️ Technical Debt
 
@@ -30,6 +28,11 @@
 - [x] Add Italian language support (v0.0.3)
 - [ ] Add French language support
 - [ ] Add Spanish language support
+- [ ] Add German language support
+- [ ] Add Portuguese language support
+- [ ] Add Russian language support
+- [ ] Add Aeabic language support
+
 
 ## 📊 Testing & Quality
 
@@ -40,7 +43,7 @@
 
 ## 📝 Documentation
 
-- [x] Update README with new features (v0.0.2)
+- [x] Update README with new features (v0.0.3)
 - [ ] Add user guide for new features
 - [ ] Update API documentation
 - [ ] Write user guide
