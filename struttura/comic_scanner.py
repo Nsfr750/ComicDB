@@ -764,9 +764,15 @@ class ComicScanner:
             from rarfile import RarFile, NotRarFile, BadRarFile
             
             # Check if rarfile can find the unrar executable
-            if not rarfile.UNRAR_TOOL_AVAILABLE:
-                self.logger.warning("UnRAR executable not found. Please install UnRAR or WinRAR and ensure it's in your PATH.")
-                return None, None
+            try:
+                # For newer versions of rarfile
+                if hasattr(rarfile, 'UNRAR_TOOL_AVAILABLE') and not rarfile.UNRAR_TOOL_AVAILABLE:
+                    self.logger.warning("UnRAR executable not found. Please install UnRAR or WinRAR and ensure it's in your PATH.")
+                    return None, None
+            except Exception as e:
+                # For older versions of rarfile that don't have UNRAR_TOOL_AVAILABLE
+                self.logger.debug(f"RAR tool check failed: {e}")
+                pass
                 
             # Open the RAR file
             with RarFile(file_path, 'r') as rar_ref:
