@@ -5,18 +5,20 @@ from struttura.logger import log_info, log_error, log_warning
 from struttura.lang import tr
 import os
 
-class MainWindow(tk.Tk):
-    def __init__(self, db_config=None):
-        super().__init__()
-        self.title(tr('app_title'))
-        self.geometry('1024x768')
+class MainWindow(ttk.Frame):
+    def __init__(self, parent, db_config=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.parent.title(tr('app_title'))
+        self.parent.geometry('1024x768')
         self.db_config = db_config or {
             'database': 'comicdb.sqlite',
             'db_type': 'sqlite'
         }
+        self.pack(fill=tk.BOTH, expand=True)
         
-        # Set up window close handler
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        # Set up window close handler on the parent window
+        self.parent.protocol("WM_DELETE_WINDOW", self.on_close)
         
         # Configure grid weights
         self.grid_rowconfigure(0, weight=0)
@@ -164,7 +166,10 @@ class MainWindow(tk.Tk):
     
     def on_close(self):
         """Handle window close event."""
-        self.cleanup()
+        from tkinter import messagebox
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.cleanup()
+            self.parent.destroy()
     
     def cleanup(self):
         """Clean up resources before closing the application."""
