@@ -13,20 +13,16 @@ ComicDB is a powerful and user-friendly comic book management application that h
 
 ## Quick Start
 
-1. [Install ComicDB](user/installation.md)
-2. [Configure your library](user/configuration.md)
+1. [Install ComicDB](installation.md)
+2. [Configure your library](configuration.md)
 3. Start adding your comics!
 
 ## Documentation
 
-- [User Guide](user/getting-started.md) - Learn how to use ComicDB
-- [Developer Guide](developer/architecture.md) - Contribute to the project
-- [FAQ](user/faq.md) - Find answers to common questions
+- [User Guide](getting-started.md) - Learn how to use ComicDB
+- [FAQ](faq.md) - Find answers to common questions
 
 ## Getting Help
 
 - [Report an Issue](https://github.com/Nsfr750/ComicDB/issues)
 - [Discussions](https://github.com/Nsfr750/ComicDB/discussions)
-- [Contribute](developer/contributing.md)
-
-
