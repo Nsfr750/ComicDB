@@ -33,7 +33,7 @@ A modern comic book collection manager and viewer with support for CBZ, CBR, and
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/ComicDB.git
+   git clone https://github.com/Nsfr750/ComicDB.git
    cd ComicDB
    ```
 
