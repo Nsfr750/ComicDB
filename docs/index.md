@@ -1,7 +1,5 @@
 # Welcome to ComicDB
 
-![ComicDB Logo](img/logo.png){: style="height:100px;width:auto"}
-
 ComicDB is a powerful and user-friendly comic book management application that helps you organize, browse, and manage your digital comic book collection with ease.
 
 ## Features
