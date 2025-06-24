@@ -1,6 +1,6 @@
 # ComicDB
 
-[![GitHub release](https://img.shields.io/badge/release-v0.0.3-green)](https://github.com/Nsfr750/ComicDB/releases/tag/v0.0.3)
+[![GitHub release](https://img.shields.io/badge/release-v0.0.3-green.svg?style=for-the-badge)](https://github.com/Nsfr750/ComicDB/releases/tag/v0.0.3)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/Nsfr750/ComicDB/graphs/commit-activity)
