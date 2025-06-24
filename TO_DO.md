@@ -6,8 +6,11 @@
 - [x] Implement proper error handling for corrupted archives (v0.0.2)
 - [ ] Add progress feedback during long operations
 - [x] Improve metadata extraction accuracy (v0.0.2)
+- [x] Fix language switching functionality (v0.0.3)
+- [x] Fix application exit handling (v0.0.3)
 
 ## 📚 Features
+
 - [ ] Add batch processing for multiple files
 - [ ] Implement series/volume management
 - [ ] Add dark/light theme support
@@ -20,14 +23,23 @@
 - [x] Improve logging and error reporting (v0.0.2)
 - [ ] Optimize performance for large collections
 - [ ] Add type hints throughout the codebase
+- [x] Fix relative import issues in menu module (v0.0.3)
+
+## 🌐 Localization
+
+- [x] Add Italian language support (v0.0.3)
+- [ ] Add French language support
+- [ ] Add Spanish language support
 
 ## 📊 Testing & Quality
+
 - [ ] Set up CI/CD pipeline
 - [ ] Add integration tests for new archive formats
 - [ ] Implement code coverage reporting
 - [ ] Add performance benchmarks for archive operations
 
 ## 📝 Documentation
+
 - [x] Update README with new features (v0.0.2)
 - [ ] Add user guide for new features
 - [ ] Update API documentation

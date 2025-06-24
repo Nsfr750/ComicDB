@@ -1,12 +1,10 @@
 # ComicDB
 
-
-[![GitHub release](https://img.shields.io/badge/release-v0.0.2-green)](https://github.com/Nsfr750/ComicDB/releases/tag/v0.0.2)
+[![GitHub release](https://img.shields.io/badge/release-v0.0.3-green)](https://github.com/Nsfr750/ComicDB/releases/tag/v0.0.3)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/Nsfr750/ComicDB/graphs/commit-activity)
 [![Last Commit](https://img.shields.io/github/last-commit/Nsfr750/ComicDB?style=for-the-badge)](https://github.com/Nsfr750/ComicDB/commits/main)
-
 
 A modern comic book collection manager and viewer with support for CBZ, CBR, CBT, CB7, and PDF formats.
 
@@ -87,7 +85,6 @@ python main.py
 
 All log entries (info, warning, error, and uncaught exceptions) are written to `traceback.log` in your project root. The logging system is thread-safe and timestamps all entries.
 
-
 ### How to Use
 
 ```python
@@ -124,7 +121,6 @@ Run tests with:
 - `main.py` — Main entry point
 - `gui/` — GUI components (windows, widgets)
 - `struttura/` — Core logic, dialogs, and utilities
-
 
 ## Troubleshooting
 

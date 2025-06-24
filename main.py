@@ -22,7 +22,7 @@ from struttura.version import get_version
 from gui.main_window import MainWindow
 from gui.splash import SplashScreen
 from struttura.comic_scanner import ComicScanner
-from struttura.lang import set_language, tr
+from struttura.lang import set_language, get_language, tr
 from struttura.update_checker import check_for_updates
 from struttura.unrar_utils import find_unrar_executable, setup_unrar, is_rar_supported
 
@@ -86,18 +86,26 @@ def init_database() -> bool:
 
 def show_main_application(root, config):
     """Show the main application window."""
+    # Configure the root window
+    root.title(f"ComicDB {get_version()}")
+    
     # Create the main application
     app = MainWindow(root, config)
     
-    # Set up the UI
-    app.setup_ui()
+    # Set up the UI - this is now done in MainWindow.__init__
+    
+    # Center the window
+    window_width = 1200
+    window_height = 800
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    center_x = int(screen_width/2 - window_width/2)
+    center_y = int(screen_height/2 - window_height/2)
+    root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
     
     # Check for updates in the background
-    if config.get('check_updates', True, bool):
+    if config.get('check_updates', True):
         check_for_updates(root, get_version())
-    
-    # Start the main event loop
-    root.mainloop()
 
 def main():
     """Main entry point for the application."""
@@ -117,8 +125,13 @@ def main():
     # Load configuration
     config = load_config()
     
-    # Set up language
+    # Set up language - use 'language' key from config, default to 'en' if not found
     set_language(config.get('language', 'en'))
+    log_info(f"Language set to: {get_language()}")
+    # Save the language to config if not already set
+    if 'language' not in config:
+        config['language'] = get_language()
+        save_config(config)
     
     # Create the main application window
     root = tk.Tk()
@@ -132,25 +145,25 @@ def main():
     except Exception as e:
         log_error(f"Error setting application icon: {e}")
     
-    # Set window size and position
-    window_width = 1200
-    window_height = 800
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    center_x = int(screen_width/2 - window_width/2)
-    center_y = int(screen_height/2 - window_height/2)
-    root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+    # Hide the root window initially
+    root.withdraw()
     
     # Show splash screen
-    splash = SplashScreen(root, duration=2000)  # Show for 2 seconds
+    splash = SplashScreen(root, duration=5000)  # Show for 5 seconds
     
     # Schedule the main application to start after splash screen
-    root.after(100, lambda: show_main_application(root, config))
+    def show_main():
+        # Show the main window
+        root.deiconify()
+        show_main_application(root, config)
+        
+    root.after(2000, show_main)  # Show main window after splash duration
     
     # Start the main loop
     root.mainloop()
 
 if __name__ == "__main__":
+    print("Starting ComicDB...")
     try:
         main()
     except Exception as e:
@@ -183,12 +196,8 @@ if __name__ == "__main__":
                 
             except Exception as e:
                 print(f"Error during database cleanup: {e}")
-                import traceback
                 traceback.print_exc()
             finally:
                 db = None
-
-if __name__ == "__main__":
-    print("Starting ComicDB...")
     main()
     print("ComicDB has exited.")

@@ -1,13 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
-from .about import About
-from .help import Help
-from .sponsor import Sponsor
-from .log_viewer import LogViewer
-from .version import show_version, get_version
-from .updates import UpdateChecker
-from .lang import tr, set_language
+from struttura.about import About
+from struttura.help import Help
+from struttura.sponsor import Sponsor
+from struttura.log_viewer import LogViewer
+from struttura.version import show_version, get_version
+from struttura.updates import UpdateChecker
+from struttura.lang import tr, set_language
 
 LANG_OPTIONS = {'English': 'en', 'Italiano': 'it'}
 
@@ -69,7 +69,13 @@ def create_menu_bar(root, app):
     
     # Language menu
     def set_lang_and_restart(lang_code):
+        from struttura.config import load_config, save_config
         set_language(lang_code)
+        # Save the language preference to config
+        config = load_config()
+        config['language'] = lang_code
+        save_config(config)
+        # Restart the application
         root.destroy()
         import os
         os.execl(sys.executable, sys.executable, *sys.argv)

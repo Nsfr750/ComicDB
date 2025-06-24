@@ -167,9 +167,18 @@ class MainWindow(ttk.Frame):
     def on_close(self):
         """Handle window close event."""
         from tkinter import messagebox
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        if messagebox.askokcancel(tr('quit'), tr('Do you want to quit?')):
             self.cleanup()
+            # First destroy all widgets
+            for widget in self.parent.winfo_children():
+                widget.destroy()
+            # Stop any running loops
+            self.parent.quit()
+            # Ensure the application exits
             self.parent.destroy()
+            # Force exit the application
+            import os
+            os._exit(0)
     
     def cleanup(self):
         """Clean up resources before closing the application."""
@@ -178,17 +187,29 @@ class MainWindow(ttk.Frame):
             if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'cleanup'):
                 self.comics_panel.cleanup()
                 
-            # Commit any pending transactions
+            # Commit any pending transactions and close database connections
             if hasattr(self, 'comics_panel') and hasattr(self.comics_panel, 'db') and self.comics_panel.db:
-                if hasattr(self.comics_panel.db.conn, 'commit'):
-                    self.comics_panel.db.conn.commit()
+                try:
+                    if hasattr(self.comics_panel.db.conn, 'commit'):
+                        self.comics_panel.db.conn.commit()
+                        log_info("Committed pending transactions")
+                except Exception as commit_error:
+                    log_error(f"Error committing transactions: {commit_error}")
                 
                 # Close the database connection
-                if hasattr(self.comics_panel.db, 'close'):
-                    self.comics_panel.db.close()
+                try:
+                    if hasattr(self.comics_panel.db, 'close'):
+                        self.comics_panel.db.close()
+                        log_info("Database connection closed")
+                except Exception as close_error:
+                    log_error(f"Error closing database: {close_error}")
+            
+            # Clear any after events
+            if hasattr(self, 'parent') and self.parent:
+                for after_id in self.parent.tk.eval('after info').split():
+                    self.parent.after_cancel(after_id)
                     
         except Exception as e:
             log_error(f"Error during cleanup: {e}")
-            
-        # Close the application
-        self.destroy()
+            import traceback
+            traceback.print_exc()

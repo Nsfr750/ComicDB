@@ -119,6 +119,10 @@ LANGUAGES = {
         'comics_in_database': '{count} comics in database',
         'error_loading_stats': 'Error loading statistics',
         'error_loading_status': 'Error loading status',
+
+        # Quit Messages
+        'quit': 'Quit',
+        'Do you want to quit?': 'Do you want to quit?',
     },
     'it': {
         'app_title': 'ComicDB',
@@ -241,6 +245,11 @@ LANGUAGES = {
         'comics_in_database': '{count} fumetti nel database',
         'error_loading_stats': 'Errore nel caricamento delle statistiche',
         'error_loading_status': 'Errore nel caricamento dello stato',
+
+        # Quit Messages
+        'quit': 'Esci',
+        'Do you want to quit?': 'Vuoi Uscire?',
+
     }
 }
 
@@ -274,6 +283,9 @@ def set_language(lang):
     else:
         _current_lang = 'en'
     _save_lang(_current_lang)
+    # Clear any cached translations
+    global _translation_cache
+    _translation_cache = {}
 
 def get_language():
     return _current_lang
