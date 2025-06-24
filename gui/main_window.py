@@ -25,8 +25,8 @@ class MainWindow(ttk.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
-        # Menu bar
-        create_menu_bar(self, self)
+        # Menu bar - use parent window for menu
+        create_menu_bar(self.parent, self)
         
         # Create notebook for tabs
         self.notebook = ttk.Notebook(self)
