@@ -38,9 +38,6 @@ Yes, ComicDB can import from:
 - Comic Vine
 - CSV/JSON exports
 
-### Is there a mobile app?
-A mobile app is currently in development. In the meantime, you can use the web interface on your mobile device.
-
 ## Troubleshooting
 
 ### ComicDB won't start
