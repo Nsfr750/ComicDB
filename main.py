@@ -7,6 +7,56 @@ project_root = os.path.abspath(os.path.dirname(__file__))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+def verify_unrar_setup() -> bool:
+    """Verify that UnRAR is properly set up for handling CBR files."""
+    from struttura.unrar_utils import setup_unrar, is_rar_supported, find_unrar_executable
+    
+    print("\n=== Checking RAR Support ===")
+    
+    # First check if we can find the UnRAR executable
+    unrar_path = find_unrar_executable()
+    if unrar_path:
+        print(f"✓ Found UnRAR at: {unrar_path}")
+    else:
+        print("⚠️  Could not find UnRAR executable in standard locations")
+    
+    # Try to set up RAR support
+    success, message = setup_unrar()
+    print(f"Setup result: {message}")
+    
+    if success:
+        print("✓ RAR support is properly configured")
+        return True
+    
+    # If setup failed, try to diagnose the issue
+    print("\n⚠️  RAR Support Issues:")
+    print(f"- {message}")
+    
+    # Check if rarfile is installed
+    try:
+        import rarfile
+    except ImportError:
+        print("\n❌ The 'rarfile' package is not installed.")
+        print("   Install it with: pip install rarfile")
+        print("   Then install either WinRAR or UnRAR as described below.")
+    
+    print("\nTo enable full RAR support, please install one of the following:")
+    print("1. WinRAR (recommended): https://www.win-rar.com/")
+    print("   - Make sure to install the 64-bit version if you're on 64-bit Windows")
+    print("   - During installation, select 'Add to PATH' or add the installation directory to your system PATH")
+    print("2. UnRAR (lightweight): https://www.rarlab.com/rar/UnRAR.exe")
+    print("   - Download and extract to a directory in your PATH")
+    print("\nAfter installation, restart the application.")
+    print("Note: The application will continue to work, but some RAR files may not be accessible.")
+    
+    # Check if we can use RAR support in a limited way
+    supported, support_msg = is_rar_supported()
+    if supported:
+        print(f"\nℹ️  Limited RAR support is available: {support_msg}")
+        return True
+    
+    return False
+
 def init_database() -> bool:
     """Initialize the database and create tables if they don't exist."""
     db = None
@@ -46,6 +96,12 @@ def main():
     db = None
     
     try:
+        print("Starting ComicDB...")
+        
+        # Verify UnRAR setup
+        if not verify_unrar_setup():
+            print("Warning: RAR file support may be limited. Continuing anyway...")
+        
         print("Setting up logging...")
         from struttura.logger import setup_global_exception_logging
         setup_global_exception_logging()

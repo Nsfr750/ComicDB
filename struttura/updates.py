@@ -68,11 +68,26 @@ class UpdateChecker:
         try:
             logger.info("Checking for updates...")
             response = requests.get(self.update_url, timeout=10)
-            response.raise_for_status()
-            release = response.json()
             
+            # Check if the request was successful
+            if response.status_code == 404:
+                logger.warning("Update check failed: Repository or release not found")
+                return False, None
+                
+            response.raise_for_status()
+            
+            try:
+                release = response.json()
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON response: {e}")
+                return False, None
+                
+            if not isinstance(release, dict) or 'tag_name' not in release:
+                logger.error("Invalid release data received")
+                return False, None
+                
             latest_version = release['tag_name'].lstrip('v')
-            self.config['last_checked'] = release['published_at']
+            self.config['last_checked'] = release.get('published_at')
             self.config['last_version'] = latest_version
             self._save_config()
             
@@ -80,9 +95,9 @@ class UpdateChecker:
                 logger.info(f"Update available: {latest_version}")
                 return True, {
                     'version': latest_version,
-                    'url': release['html_url'],
-                    'notes': release['body'],
-                    'published_at': release['published_at']
+                    'url': release.get('html_url', ''),
+                    'notes': release.get('body', ''),
+                    'published_at': release.get('published_at', '')
                 }
             else:
                 logger.info("No updates available")
@@ -97,11 +112,13 @@ class UpdateChecker:
         except requests.RequestException as e:
             logger.error(f"Error checking for updates: {e}")
             if parent:
-                messagebox.showerror(
-                    'Update Error',
-                    f'Failed to check for updates: {str(e)}',
-                    parent=parent
-                )
+                # Only show error message if this was a forced check (user-initiated)
+                if force_check:
+                    messagebox.showerror(
+                        'Update Error',
+                        f'Failed to check for updates: {str(e)}',
+                        parent=parent
+                    )
             return False, None
     
     def _version_compare(self, v1: str, v2: str) -> int:
