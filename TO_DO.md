@@ -3,31 +3,34 @@
 ## 🚧 High Priority
 
 - [ ] Add comprehensive test coverage for core functionality
-- [ ] Implement proper error handling for corrupted archives
+- [x] Implement proper error handling for corrupted archives (v0.0.2)
 - [ ] Add progress feedback during long operations
-- [ ] Improve metadata extraction accuracy
+- [x] Improve metadata extraction accuracy (v0.0.2)
 
 ## 📚 Features
 - [ ] Add batch processing for multiple files
 - [ ] Implement series/volume management
 - [ ] Add dark/light theme support
-- [ ] Support for more archive formats (7z, tar, etc.)
+- [x] Support for more archive formats (CBT, CB7) (v0.0.2)
 - [ ] Add reading progress tracking
 
 ## 🛠️ Technical Debt
 
-- [ ] Refactor archive handling code
-- [ ] Improve logging and error reporting
+- [x] Refactor archive handling code (v0.0.2)
+- [x] Improve logging and error reporting (v0.0.2)
 - [ ] Optimize performance for large collections
 - [ ] Add type hints throughout the codebase
 
 ## 📊 Testing & Quality
 - [ ] Set up CI/CD pipeline
-- [ ] Add integration tests
+- [ ] Add integration tests for new archive formats
 - [ ] Implement code coverage reporting
-- [ ] Add performance benchmarks
+- [ ] Add performance benchmarks for archive operations
 
 ## 📝 Documentation
+- [x] Update README with new features (v0.0.2)
+- [ ] Add user guide for new features
+- [ ] Update API documentation
 - [ ] Write user guide
 - [ ] Add API documentation
 - [ ] Create contribution guidelines

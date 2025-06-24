@@ -1,26 +1,26 @@
 # ComicDB
 
 
-[![GitHub release](https://img.shields.io/badge/release-v0.0.1-green)](https://github.com/Nsfr750/ComicDB/releases/tag/v0.0.1)
+[![GitHub release](https://img.shields.io/badge/release-v0.0.2-green)](https://github.com/Nsfr750/ComicDB/releases/tag/v0.0.2)
 [![Python Version](https://img.shields.io/badge/python-3.8+-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](https://www.gnu.org/licenses/gpl-3.0)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg?style=for-the-badge)](https://github.com/Nsfr750/ComicDB/graphs/commit-activity)
 [![Last Commit](https://img.shields.io/github/last-commit/Nsfr750/ComicDB?style=for-the-badge)](https://github.com/Nsfr750/ComicDB/commits/main)
 
 
-A modern comic book collection manager and viewer with support for CBZ, CBR, and PDF formats.
+A modern comic book collection manager and viewer with support for CBZ, CBR, CBT, CB7, and PDF formats.
 
 **License:** This project is licensed under the GNU General Public License v3.0 (GPLv3). See [LICENSE](LICENSE) for details.
 
 ## Features
 
-- Support for CBZ, CBR, and PDF comic book formats
+- Support for CBZ, CBR, CBT, CB7, and PDF comic book formats
+- Advanced metadata extraction using comicapi
 - Automatic cover image extraction
-- Basic metadata handling
 - Quick search and filter capabilities
 - Modern, themeable interface
-- Logging system for debugging
-- Pure Python implementation
+- Comprehensive logging system
+- Cross-platform compatibility
 
 ## 📋 Requirements
 

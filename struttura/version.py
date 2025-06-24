@@ -2,7 +2,7 @@
 # Update version numbers as needed for releases
 VERSION_MAJOR = 0
 VERSION_MINOR = 0
-VERSION_PATCH = 1
+VERSION_PATCH = 2
 
 # Additional version qualifiers
 VERSION_QUALIFIER = ''  # Could be 'alpha', 'beta', 'rc', or ''

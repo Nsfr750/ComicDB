@@ -2,10 +2,10 @@ import os
 import logging
 import tempfile
 import shutil
+import sys
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple, List, BinaryIO, Union
 import zipfile
-import py7zr
 import io
 import magic
 import pikepdf
@@ -16,6 +16,38 @@ import re
 from dataclasses import dataclass, field
 import contextlib
 
+# Set up unrar path
+if sys.platform == 'win32':
+    # Common UnRAR installation paths on Windows
+    unrar_paths = [
+        r"C:\Program Files\WinRAR\UnRAR.exe",
+        r"C:\Program Files (x86)\WinRAR\UnRAR.exe",
+        r"C:\Program Files\UnrarDLL\UnRAR.exe",
+        r"C:\Program Files (x86)\UnrarDLL\UnRAR.exe"
+    ]
+    
+    for path in unrar_paths:
+        if os.path.exists(path):
+            os.environ['UNRAR_LIB_PATH'] = os.path.dirname(path)
+            break
+
+import comicapi.comicarchive
+from comicapi import utils
+from comicapi.issuestring import *
+from comicapi.comicarchive import *
+from comicapi.archivers import Archiver
+from comicapi.genericmetadata import GenericMetadata
+from comicapi.comicarchive import MetaDataStyle
+import rarfile
+
+# Configure rarfile to use unrar if available
+try:
+    from unrar import rarfile as unrar_rarfile
+    rarfile.UNRAR_TOOL = 'unrar'  # Use the Python unrar package
+    rarfile.UNRAR_TOOL_AVAILABLE = True
+except ImportError:
+    # Fall back to default rarfile behavior
+    pass
 logger = logging.getLogger(__name__)
 
 
@@ -118,9 +150,11 @@ class ComicScanner:
     """
     
     def __init__(self):
-        self.supported_formats = ['.cbr', '.cbz', '.pdf']
+        self.supported_formats = ['.cbr', '.cbz', '.cbt', '.cb7', '.pdf']
         self.image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
         self.max_cover_size = (300, 450)  # Max dimensions for cover images
+        self.comic_archive = None
+        self.logger = logging.getLogger(__name__)
     
     def is_comic_file(self, file_path: str) -> bool:
         """Check if the file is a supported comic book format."""
@@ -280,19 +314,126 @@ class ComicScanner:
             logger.warning(f"Could not extract PDF metadata from {file_path}: {e}")
     
     def _extract_comic_archive_metadata(self, file_path: str, metadata: Dict[str, Any]) -> None:
-        """Extract metadata from CBR/CBZ files."""
+        """Extract metadata from comic archive files (CBZ, CBR, CBT, CB7)."""
         try:
-            ext = os.path.splitext(file_path.lower())[1]
+            # Initialize ComicArchive for the file
+            self.comic_archive = comicapi.comicarchive.ComicArchive(file_path)
             
-            # Handle ZIP/CBZ files
-            if ext in ['.cbz', '.zip']:
-                self._extract_zip_metadata(file_path, metadata)
-            # Handle RAR/CBR files
-            elif ext in ['.cbr', '.rar']:
-                self._extract_rar_metadata(file_path, metadata)
+            # Check if it's a valid comic archive
+            if not self.comic_archive.seems_to_be_a_comic_archive():
+                self.logger.warning(f"File does not appear to be a valid comic archive: {file_path}")
+                return None
+                
+            # Read metadata with default style
+            md = self.comic_archive.read_metadata(MetaDataStyle.CIX)
+            
+            if md:
+                # Map comicapi metadata to our metadata format
+                if hasattr(md, 'series') and md.series:
+                    metadata['series'] = md.series
+                if hasattr(md, 'issue') and md.issue:
+                    metadata['issue_number'] = str(md.issue)
+                if hasattr(md, 'title') and md.title:
+                    metadata['title'] = md.title
+                if hasattr(md, 'publisher') and md.publisher:
+                    metadata['publisher'] = md.publisher
+                if hasattr(md, 'volume') and md.volume:
+                    try:
+                        metadata['volume'] = int(md.volume) if str(md.volume).isdigit() else None
+                    except (ValueError, TypeError):
+                        pass
+                if hasattr(md, 'year') and md.year:
+                    try:
+                        metadata['year'] = int(md.year) if str(md.year).isdigit() else None
+                    except (ValueError, TypeError):
+                        pass
+                # Handle writers/authors
+                if hasattr(md, 'writers') and md.writers:
+                    metadata['authors'] = [w.strip() for w in md.writers]
+                elif hasattr(md, 'writer') and md.writer:
+                    metadata['authors'] = [w.strip() for w in md.writer.split(',')]
+                if hasattr(md, 'description') and md.description:
+                    metadata['summary'] = md.description
+                if hasattr(md, 'notes') and md.notes:
+                    metadata['notes'] = md.notes
+                if hasattr(md, 'genre') and md.genre:
+                    metadata['genre'] = md.genre
+                if hasattr(md, 'language') and md.language:
+                    metadata['language'] = md.language
+                if hasattr(md, 'web_link') and md.web_link:
+                    metadata['web'] = md.web_link
+                elif hasattr(md, 'webLink') and md.webLink:
+                    metadata['web'] = md.webLink
+                if hasattr(md, 'page_count') and md.page_count:
+                    try:
+                        metadata['page_count'] = int(md.page_count)
+                    except (ValueError, TypeError):
+                        pass
+                if hasattr(md, 'black_and_white') and md.black_and_white is not None:
+                    metadata['black_and_white'] = md.black_and_white
+                elif hasattr(md, 'blackAndWhite') and md.blackAndWhite is not None:
+                    metadata['black_and_white'] = md.blackAndWhite
+                if hasattr(md, 'manga') and md.manga is not None:
+                    metadata['manga'] = md.manga
+                if hasattr(md, 'characters') and md.characters:
+                    if isinstance(md.characters, str):
+                        metadata['characters'] = [c.strip() for c in md.characters.split(',')]
+                    else:
+                        metadata['characters'] = md.characters
+                if hasattr(md, 'teams') and md.teams:
+                    if isinstance(md.teams, str):
+                        metadata['teams'] = [t.strip() for t in md.teams.split(',')]
+                    else:
+                        metadata['teams'] = md.teams
+                if hasattr(md, 'locations') and md.locations:
+                    if isinstance(md.locations, str):
+                        metadata['locations'] = [l.strip() for l in md.locations.split(',')]
+                    else:
+                        metadata['locations'] = md.locations
+                if hasattr(md, 'scan_info') and md.scan_info:
+                    metadata['scan_info'] = md.scan_info
+                elif hasattr(md, 'scanInfo') and md.scanInfo:
+                    metadata['scan_info'] = md.scanInfo
+                if hasattr(md, 'story_arc') and md.story_arc:
+                    metadata['story_arc'] = md.story_arc
+                elif hasattr(md, 'storyArc') and md.storyArc:
+                    metadata['story_arc'] = md.storyArc
+                if hasattr(md, 'series_group') and md.series_group:
+                    metadata['series_group'] = md.series_group
+                elif hasattr(md, 'seriesGroup') and md.seriesGroup:
+                    metadata['series_group'] = md.seriesGroup
+                if hasattr(md, 'alternate_series') and md.alternate_series:
+                    metadata['alternate_series'] = md.alternate_series
+                elif hasattr(md, 'alternateSeries') and md.alternateSeries:
+                    metadata['alternate_series'] = md.alternateSeries
+                if hasattr(md, 'age_rating') and md.age_rating:
+                    metadata['age_rating'] = md.age_rating
+                elif hasattr(md, 'ageRating') and md.ageRating:
+                    metadata['age_rating'] = md.ageRating
+                if hasattr(md, 'community_rating') and md.community_rating is not None:
+                    try:
+                        metadata['community_rating'] = float(md.community_rating)
+                    except (ValueError, TypeError):
+                        pass
+                elif hasattr(md, 'communityRating') and md.communityRating is not None:
+                    try:
+                        metadata['community_rating'] = float(md.communityRating)
+                    except (ValueError, TypeError):
+                        pass
+                if hasattr(md, 'review') and md.review:
+                    metadata['review'] = md.review
+            
+            # If no metadata was found, try to extract from filename
+            if not any(metadata.values()):
+                self._parse_filename(metadata)
                 
         except Exception as e:
-            logger.warning(f"Unexpected error extracting metadata from {file_path}: {e}", exc_info=True)
+            self.logger.error(f"Error initializing ComicArchive for {file_path}: {str(e)}")
+            return None
+            
+        finally:
+            if hasattr(self, 'comic_archive') and self.comic_archive:
+                self.comic_archive = None
             
     def _extract_zip_metadata(self, file_path: str, metadata: Dict[str, Any]) -> None:
         """Extract metadata from ZIP/CBZ file."""
@@ -495,30 +636,83 @@ class ComicScanner:
         return None, None
     
     def _extract_archive_cover(self, file_path: str) -> Tuple[Optional[bytes], Optional[str]]:
-        """Extract the first image from a CBR/CBZ file as a cover."""
+        """Extract the cover image from a comic archive file."""
         try:
-            ext = os.path.splitext(file_path.lower())[1]
+            # Check if it's a RAR file and if we have the tools to handle it
+            if file_path.lower().endswith(('.cbr', '.rar')):
+                if not rarfile.UNRAR_TOOL_AVAILABLE:
+                    self.logger.warning(f"RAR support not properly configured. Cannot extract cover from: {file_path}")
+                    self.logger.info("Please install UnRAR or WinRAR and ensure it's in your PATH")
+                    return None, None
             
-            # Handle ZIP/CBZ files
-            if ext in ['.cbz', '.zip']:
-                return self._extract_zip_cover(file_path)
-            # Handle RAR/CBR files
-            elif ext in ['.cbr', '.rar']:
-                return self._extract_rar_cover(file_path)
-            else:
-                logger.warning(f"Unsupported archive format: {file_path}")
+            # Initialize ComicArchive for the file
+            self.comic_archive = comicapi.comicarchive.ComicArchive(file_path)
+            
+            # Check if it's a valid comic archive
+            if not hasattr(self.comic_archive, 'seems_to_be_a_comic_archive') or not self.comic_archive.seems_to_be_a_comic_archive():
+                self.logger.warning(f"File does not appear to be a valid comic archive: {file_path}")
                 return None, None
+            
+            # Get the first page as cover
+            try:
+                page_data = self.comic_archive.get_page(0)
+                if not page_data:
+                    self.logger.warning(f"No pages found in archive: {file_path}")
+                    return None, None
+                    
+                # Process the image data
+                return self._process_image_data(page_data, file_path)
                 
+            except Exception as e:
+                self.logger.error(f"Error reading page 0 from {file_path}: {str(e)}")
+                return None, None
+            
         except Exception as e:
-            logger.warning(f"Unexpected error extracting cover from {file_path}: {e}", exc_info=True)
+            self.logger.error(f"Error extracting cover from {file_path}: {str(e)}", exc_info=True)
             return None, None
             
+        finally:
+            if hasattr(self, 'comic_archive') and self.comic_archive:
+                self.comic_archive = None
+            
     def _extract_rar_cover(self, file_path: str) -> Tuple[Optional[bytes], Optional[str]]:
-        """Extract cover from RAR/CBR file using py7zr."""
+        """
+        Extract cover from RAR/CBR file using py7zr.
+        
+        Args:
+            file_path: Path to the RAR/CBR file
+            
+        Returns:
+            Tuple of (image_data, image_type) or (None, None) if extraction fails
+        """
         try:
-            with py7zr.SevenZipFile(file_path, 'r') as rar_ref:
-                # Get all files in the archive
-                all_files = rar_ref.getnames()
+            # Verify file exists and is accessible
+            if not os.path.exists(file_path):
+                logger.warning(f"File not found: {file_path}")
+                return None, None
+                
+            if not os.path.isfile(file_path):
+                logger.warning(f"Path is not a file: {file_path}")
+                return None, None
+                
+            if os.path.getsize(file_path) == 0:
+                logger.warning(f"File is empty: {file_path}")
+                return None, None
+                
+            # Verify it's a RAR file
+            if not self._is_rar_file(file_path):
+                logger.warning(f"Not a valid RAR file: {file_path}")
+                # Check if it's actually a ZIP file
+                if zipfile.is_zipfile(file_path):
+                    logger.warning(f"File {file_path} is actually a ZIP file, not a RAR")
+                    return self._extract_zip_cover(file_path)
+                return None, None
+                
+            # Try to open with py7zr
+            try:
+                with py7zr.SevenZipFile(file_path, 'r') as rar_ref:
+                    # Get all files in the archive
+                    all_files = rar_ref.getnames()
                 
                 # Filter for image files
                 image_files = [
@@ -547,23 +741,57 @@ class ComicScanner:
                     # Process the image
                     return self._process_image_data(img_data, first_image)
                     
-        except py7zr.Bad7zFile as e:
-            logger.warning(f"Bad RAR file: {file_path} - {e}")
-            return None, None
+            except py7zr.Bad7zFile as e:
+                logger.warning(f"Bad RAR file: {file_path} - {e}")
+                return None, None
+            except Exception as e:
+                logger.warning(f"Error reading RAR file {file_path}: {e}")
+                return None, None
+                
         except Exception as e:
-            logger.warning(f"Error reading RAR file {file_path}: {e}")
+            logger.warning(f"Unexpected error processing RAR file {file_path}: {e}", exc_info=True)
             return None, None
             
     def _extract_zip_cover(self, file_path: str) -> Tuple[Optional[bytes], Optional[str]]:
-        """Extract cover from ZIP/CBZ file."""
+        """
+        Extract cover from ZIP/CBZ file.
+        
+        Args:
+            file_path: Path to the ZIP/CBZ file
+            
+        Returns:
+            Tuple of (image_data, image_type) or (None, None) if extraction fails
+        """
         try:
-            # First verify it's actually a ZIP file
+            # Verify file exists and is accessible
+            if not os.path.exists(file_path):
+                logger.warning(f"File not found: {file_path}")
+                return None, None
+                
+            if not os.path.isfile(file_path):
+                logger.warning(f"Path is not a file: {file_path}")
+                return None, None
+                
+            if os.path.getsize(file_path) == 0:
+                logger.warning(f"File is empty: {file_path}")
+                return None, None
+            
+            # Check if it's actually a RAR file mislabeled as ZIP
+            if self._is_rar_file(file_path):
+                logger.warning(f"File {file_path} is actually a RAR file, not a ZIP")
+                return self._extract_rar_cover(file_path)
+                
+            # Verify it's a valid ZIP file
             if not zipfile.is_zipfile(file_path):
-                # Check if it's a RAR file mislabeled as ZIP
-                if self._is_rar_file(file_path):
-                    logger.warning(f"File {file_path} is actually a RAR file, not a ZIP")
-                    return self._extract_rar_cover(file_path)
                 logger.warning(f"Not a valid ZIP file: {file_path}")
+                return None, None
+                
+            # Check if the ZIP file is corrupted
+            try:
+                with zipfile.ZipFile(file_path, 'r') as test_zip:
+                    test_zip.testzip()
+            except (zipfile.BadZipFile, zipfile.LargeZipFile) as e:
+                logger.warning(f"Corrupted or invalid ZIP file {file_path}: {e}")
                 return None, None
                 
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
@@ -616,14 +844,49 @@ class ComicScanner:
             return None, None
             
     def _is_rar_file(self, file_path: str) -> bool:
-        """Check if a file is likely a RAR file by its signature."""
+        """
+        Check if a file is likely a RAR file by its signature and structure.
+        
+        Args:
+            file_path: Path to the file to check
+            
+        Returns:
+            bool: True if the file appears to be a valid RAR archive, False otherwise
+        """
         try:
+            # Basic file checks
+            if not os.path.exists(file_path):
+                logger.debug(f"File does not exist: {file_path}")
+                return False
+                
+            if not os.path.isfile(file_path):
+                logger.debug(f"Path is not a file: {file_path}")
+                return False
+                
+            if os.path.getsize(file_path) < 7:  # Minimum size for RAR signature
+                logger.debug(f"File too small to be a RAR: {file_path}")
+                return False
+            
+            # Check RAR signature
             with open(file_path, 'rb') as f:
                 header = f.read(7)
-                # Check for RAR signatures
-                return (header.startswith(b'Rar!\x1a\x07\x00') or  # RAR 1.5 - 4.x
-                        header.startswith(b'Rar!\x1a\x07\x01'))     # RAR 5.0+
-        except Exception:
+                
+                # RAR 1.5 - 4.x signature: Rar!\x1A\x07\x00
+                if header.startswith(b'Rar!\x1a\x07\x00'):
+                    # Verify block type (must be 0x72 or 0x73 for archive header)
+                    block_type = f.read(1)
+                    return block_type in (b'\x72', b'\x73')
+                
+                # RAR 5.0+ signature: Rar!\x1A\x07\x01\x00
+                if header.startswith(b'Rar!\x1a\x07\x01'):
+                    # RAR 5.0+ has a different header structure
+                    return True
+                
+                # Not a RAR file
+                return False
+                
+        except Exception as e:
+            logger.debug(f"Error checking RAR file {file_path}: {e}")
             return False
     
     def _process_image_data(self, img_data: bytes, filename: str) -> Tuple[Optional[bytes], Optional[str]]:

@@ -7,7 +7,8 @@ mysql-connector-python>=8.0.0  # Optional: Only needed for MySQL support
 
 # Comic Book Handling
 comicapi>=3.2.0     # Comic metadata extraction
-py7zr>=0.20.0      # 7z, ZIP, RAR, TAR, GZIP, BZIP2, XZ, LZMA, CAB, ISO, ARJ, etc.
+unrar>=0.4          # RAR archive support
+rarfile>=4.0        # RAR archive handling
 pikepdf>=8.0.0     # PDF/CBZ file handling
 
 # File Type Detection
@@ -29,6 +30,3 @@ sphinx-rtd-theme>=1.2.0  # ReadTheDocs theme
 # Linting
 flake8>=6.0.0    # Code style checking
 isort>=5.12.0    # Import sorting
-
-# For development/testing
-pytest
